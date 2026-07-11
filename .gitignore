@@ -1,0 +1,85 @@
+# ============================================================
+# Python caches
+# ============================================================
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# ============================================================
+# Editor / OS
+# ============================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ============================================================
+# Local secrets and machine-specific configuration
+# ============================================================
+.env
+.env.*
+!.env.example
+config.local.yml
+config.local.yaml
+secrets.yml
+secrets.yaml
+
+# ============================================================
+# Model weights and exported models
+# ============================================================
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.onnx
+*.engine
+*.trt
+*.weights
+*.h5
+
+# ============================================================
+# Experiment outputs
+# ============================================================
+**/output/
+**/outputs/
+**/result/
+**/results/
+**/runs/
+**/logs/
+**/checkpoints/
+**/ckpt/
+**/weights/
+**/pretrained_models/
+**/wandb/
+**/tensorboard/
+**/.cache/
+**/cache/
+**/tmp/
+**/temp/
+
+# ============================================================
+# Generated datasets and intermediate arrays
+# Use exact paths whenever possible
+# ============================================================
+dataset/HQ/
+dataset/depth/
+dataset/LQ/
+dataset/generated/
+dataset/synthesized/
+
+*.npy
+*.npz
+
+# ============================================================
+# Local experiment records
+# ============================================================
+*.log
+*.tmp
+*.bak
