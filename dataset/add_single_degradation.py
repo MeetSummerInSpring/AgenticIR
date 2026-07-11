@@ -139,7 +139,8 @@ def add_haze(img, idx, depth_dir=Path("dataset/depth").resolve(), A=None, beta=N
 
     d = loadmat(depth_dir/idx/"predict_depth.mat")
     d = d['data_obj']
-    d = cv2.resize(d, (0, 0), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
+    # d = cv2.resize(d, (0, 0), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
+    d = cv2.resize(d, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_CUBIC)
     d = d / d.max()
 
     if A is None:

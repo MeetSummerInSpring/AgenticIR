@@ -24,7 +24,7 @@ class FBCNN(Tool):
     def _get_cmd_opts(self) -> list[str]:
         return [
             "--input_dir", self.input_dir,
-            "--weight_dir", 'FBCNN/model_zoo',
+            "--weight_dir", '/root/autodl-tmp/AgenticIR/executor/jpeg_compression_artifact_removal/tools/FBCNN/model_zoo',
             "--output_dir", self.output_dir,
             "--qf", self.qf
         ]

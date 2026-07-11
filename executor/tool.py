@@ -56,7 +56,7 @@ class Tool:
     def _postcheck(self) -> None:
         """Ensures that `output_dir` contains only the output image named `output.png`."""
         output = list(self.output_dir.glob('*'))
-        assert len(output) == 1, "There're other files in the same directory as the output image."
+        assert len(output) == 1, f"There're other files in the same directory as the output image. {len(output)}"
         if output[0].name != 'output.png':
             # rename to `output.png`
             output[0].replace(self.output_dir / 'output.png')
@@ -64,8 +64,9 @@ class Tool:
     def _invoke(self) -> None:
         self._preprocess()
         cmd = self._get_cmd()
-        subprocess.run(cmd, cwd=self.work_dir, shell=True, check=True,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # print(f"Executing command: {cmd}")
+        subprocess.run(f"""source /root/miniconda3/etc/profile.d/conda.sh
+                            {cmd}""", cwd=self.work_dir, shell=True, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self._postprocess()
 
     def _get_cmd(self) -> str:

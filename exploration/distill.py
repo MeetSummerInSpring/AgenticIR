@@ -1,6 +1,7 @@
 import json
 
 from llm import GPT4
+from llm import Llama
 from pipeline import prompts
 
 
@@ -31,14 +32,16 @@ for degras, exp in experience_hub.items():
 exp = '\n'.join(exp_lst)
 prompt = prompts.distill_knowledge_prompt.format(experience=exp)
 gpt = GPT4(system_message=prompts.system_message)
+# llama = Llama(system_message=prompts.system_message)
 distilled = gpt(prompt=prompt)
+# distilled = llama(prompt=prompt)
 
 schedule_experience = {
     "raw": exp,
     "distilled": distilled
 }
 print(prompt)
-print()
+print("--------------------------------------------------")
 print(distilled)
 
 with open("memory/schedule_experience.json", "w") as f:

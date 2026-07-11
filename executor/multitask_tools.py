@@ -120,7 +120,7 @@ class SwinIR(Tool):
         """Requires parameter `input_dir: Path`, `output_dir: Path`, `opt_task: str`, and `model_name: str`."""
         opts = [
             "--task", self.opt_task,
-            "--model_path", f"SwinIR/model_zoo/swinir/{self.model_name}",
+            "--model_path", f"/root/autodl-tmp/AgenticIR/executor/denoising/tools/SwinIR/model_zoo/{self.model_name}",
             "--folder_lq", self.input_dir,
             "--save_dir", self.output_dir
         ]
@@ -224,7 +224,7 @@ class MAXIM(Tool):
             'deraining': ('Deraining', 'maxim_ckpt_Deraining_Rain13k_checkpoint.npz'),
             # 'raindrop_removal': ('Deraining', 'maxim_ckpt_Deraining_Raindrop_checkpoint.npz'),
             'dehazing': ('Dehazing', 'maxim_ckpt_Dehazing_SOTS-Outdoor_checkpoint.npz'),
-            # 'brightening': ('Enhancement', 'maxim_ckpt_Enhancement_LOL_checkpoint.npz'),
+            'brightening': ('Enhancement', 'maxim_ckpt_Enhancement_LOL_checkpoint.npz'),
             # 'retouching': ('Enhancement', 'maxim_ckpt_Enhancement_FiveK_checkpoint.npz')
         }
         self.opt_task, self.opt_ckpt_name = opt_dict[subtask]
@@ -243,7 +243,7 @@ class MAXIM(Tool):
         """Requires parameter `input_dir: Path`, `output_dir: Path`, `opt_task: str`, and `opt_ckpt_name: str`."""
         return [
             "--task", self.opt_task,
-            "--ckpt_path", f"maxim/maxim/pretrained_models/{self.opt_ckpt_name}",
+            "--ckpt_path", f"/root/autodl-tmp/AgenticIR/executor/dehazing/tools/maxim/maxim/pretrained_models/{self.opt_ckpt_name}",
             "--input_dir", self.input_dir,
             "--output_dir", self.output_dir,
             "--has_target=False"

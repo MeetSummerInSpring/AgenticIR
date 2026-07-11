@@ -22,10 +22,12 @@ def degrade(img, degradation, idx):
 
 
 base_dir = Path("dataset")
-hq_dir = base_dir / "HQ"
+# hq_dir = base_dir / "HQ"
+hq_dir = base_dir / "QX"
 degras_path = base_dir / "degradations.txt"
 
-lq_dir = base_dir / "LQ"
+# lq_dir = base_dir / "LQ"
+lq_dir = base_dir / "QXLQ"
 lq_dir.mkdir(exist_ok=True)
 
 with open(degras_path) as f:

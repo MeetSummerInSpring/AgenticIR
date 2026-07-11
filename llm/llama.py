@@ -99,17 +99,10 @@ class Llama(BaseLLM):
         n_retries = 0
         backoff_delay = initial_delay
         while True:
-            try:
-                response = self.llama.run(payload)
-                if (finish_reason := response.json()["choices"][0]["finish_reason"]) != "stop":
-                    self._log(f"finish_reason is {finish_reason}", level="warning")
-                return response
-            except Exception as e:
-                self._log(
-                    "An error occurred when sending a request: "
-                    f"{type(e).__name__}: {e}",
-                    level="warning",
-                )
+            response = self.llama.run(payload)
+            if (finish_reason := response.json()["choices"][0]["finish_reason"]) != "stop":
+                self._log(f"finish_reason is {finish_reason}", level="warning")
+            return response
 
             n_retries += 1
             if n_retries > max_retries:

@@ -22,7 +22,7 @@ class DehazeFormer(Tool):
         return [
             "--data_dir", self.input_dir,
             "--result_dir", self.output_dir,
-            "--save_dir", 'DehazeFormer/saved_models'
+            "--save_dir", '/root/autodl-tmp/AgenticIR/executor/dehazing/tools/DehazeFormer/saved_models'
         ]
     
 
@@ -41,7 +41,7 @@ class RIDCP(Tool):
         return [
             "-i", self.input_dir,
             "-o", self.output_dir,
-            "-w", 'RIDCP_dehazing/pretrained_models/pretrained_RIDCP.pth',
+            "-w", '/root/autodl-tmp/AgenticIR/executor/dehazing/tools/RIDCP_dehazing/pretrained_models/pretrained_RIDCP.pth',
             "--use_weight",
             "--alpha", "-21.25"
         ]

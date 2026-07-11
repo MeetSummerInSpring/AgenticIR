@@ -65,8 +65,8 @@ class HistogramEqualization(BrighteningTool):
 
 subtask = 'brightening'
 brightening_toolbox = [
+    MAXIM(subtask='brightening'),
     HistogramEqualization(),
     GammaCorrection(),
     ConstantShift(),
-    # MAXIM(subtask='brightening')
 ]

@@ -74,7 +74,7 @@ parser.add_argument("--idx", type=int, default=0)
 parser.add_argument("--range", type=int, nargs=2, default=[1, 100])
 args = parser.parse_args()
 
-input_dir = Path("dataset/train").resolve()
+input_dir = Path("dataset/LQ").resolve()
 root_output_dir = Path("exhaustive_sequences").resolve()
 
 n_d: int = args.n_d
@@ -139,8 +139,8 @@ def check_number():
         
 
 if __name__ == "__main__":
-    # virtual = True
-    virtual = False
+    virtual = True
+    # virtual = False
     generate_imgs(virtual=virtual)
 
     # all

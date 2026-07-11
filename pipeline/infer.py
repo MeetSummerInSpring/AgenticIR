@@ -2,7 +2,7 @@ from pathlib import Path
 from .iragent import IRAgent
 
 
-input_path = Path("dataset/example.png").resolve()
+input_path = Path("/root/autodl-tmp/AgenticIR/output_qx/haze+motion blur+low resolution/001-260131_211504/result.png").resolve()
 output_dir = Path("output").resolve()
 
 agent = IRAgent(
@@ -15,4 +15,5 @@ agent = IRAgent(
     silent=False
 )
 
-agent.run()
+manual_plan = ['brightening']
+agent.run(plan=manual_plan)

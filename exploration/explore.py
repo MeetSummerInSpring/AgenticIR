@@ -65,6 +65,7 @@ def explore_order():
             experience[task][plan]["fail rate"]["total"] = sum(experience[task][plan]["fail rate"].values()) / len(experience[task][plan]["fail rate"])
         # sort plans by total fail rate
         experience[task] = dict(sorted(experience[task].items(), key=lambda x: x[1]["fail rate"]["total"]))
+        print(experience)
         with open(mem_dir / "fail_rate.json", "w") as f:
             json.dump(experience, f, indent=2)
 

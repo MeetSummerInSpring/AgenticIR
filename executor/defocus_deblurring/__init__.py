@@ -36,7 +36,7 @@ class IFAN(Tool):
             "--network", "IFAN",
             "--config", "config_IFAN_44",
             "--data", "random",
-            "--ckpt_abs_name", 'IFAN/ckpt/IFAN_44.pytorch',
+            "--ckpt_abs_name", '/root/autodl-tmp/AgenticIR/executor/defocus_deblurring/tools/IFAN/ckpt/IFAN_44.pytorch',
             "--data_offset", self.input_dir,
             "--output_offset", self.output_dir,
         ]
@@ -92,7 +92,7 @@ class DRBNet(Tool):
             "--eval_data", "CUHK",
             "--dataroot_cuhk", self.input_dir,
             "--results_dir", self.output_dir,
-            "--ckpt_path", 'DRBNet/ckpts/single/single_image_defocus_deblurring.pth',
+            "--ckpt_path", '/root/autodl-tmp/AgenticIR/executor/defocus_deblurring/tools/DRBNet/ckpts/single/single_image_defocus_deblurring.pth',
             "--net_mode", "single",
             "--save_images"
         ]
@@ -115,7 +115,7 @@ class DRBNet(Tool):
         """
 
         outputs = list(self.output_dir.glob("defocus_deblur/CUHK/single/*/output/*"))
-        assert len(outputs) == 1, f"There're more than one directory in the output directory"
+        assert len(outputs) == 1, f"There're more than one directory in the output directory {len(outputs)}"
         cur_output_path = outputs[0]
         output_path = self.output_dir / 'output.png'
         cur_output_path.replace(output_path)
@@ -126,5 +126,5 @@ subtask = 'defocus_deblurring'
 defocus_deblurring_toolbox = [
     DRBNet(),
     Restormer(subtask=subtask),
-    IFAN(),
+    # IFAN(),
 ]

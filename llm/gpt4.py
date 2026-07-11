@@ -28,13 +28,13 @@ class GPT4(BaseLLM):
             silent=silent
         )  # set attributes: cfg, logger, silent
 
-        self.api_key = self.cfg["OPENAI_API_KEY"]
+        self.api_key = self.cfg["GPT"]["API_KEY"]
         if model is None:
-            self.model = self.cfg["OPENAI_MODEL"]
+            self.model = self.cfg["GPT"]["MODEL"]
         else:
             self.model = model
-        self.max_tokens = self.cfg["MAX_TOKENS"]
-        self.temperature = self.cfg["TEMPERATURE"]
+        self.max_tokens = self.cfg["GPT"]["MAX_TOKENS"]
+        self.temperature = self.cfg["GPT"]["TEMPERATURE"]
 
         self.prompt_tokens = 0
         self.completion_tokens = 0
@@ -120,7 +120,7 @@ class GPT4(BaseLLM):
         backoff_delay = initial_delay
         while True:
             try:
-                response = requests.post("https://api.openai.com/v1/chat/completions",
+                response = requests.post("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
                                          headers=headers, json=payload)
                 is_valid, recommended_delay = self._check_response(response)
                 if is_valid:

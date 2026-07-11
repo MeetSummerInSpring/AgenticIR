@@ -84,7 +84,7 @@ params:
   cond_stage_config:
     target: ldm.modules.encoders.modules.FrozenOpenCLIPEmbedder
     params:
-      version: "DiffBIR/open_clip_pytorch_model.bin"
+      version: "/root/autodl-tmp/AgenticIR/executor/super_resolution/tools/DiffBIR/open_clip_pytorch_model.bin"
       freeze: True
       layer: "penultimate"
 
