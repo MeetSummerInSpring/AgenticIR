@@ -85,7 +85,7 @@ class BaseLLM:
     def _log(self, message: str, level: str = 'info') -> None:
         """Adds another line break to improve readability in markdown."""
         if self.logger is not None:
-            log_fn = eval(f'self.logger.{level}')
+            log_fn = getattr(self.logger, level)
             log_fn(message + '\n')
         if level != 'info' and (self.logger is None or self.silent):
             print(message)

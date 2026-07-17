@@ -1,4 +1,5 @@
 from pathlib import Path
+from ast import literal_eval
 import requests
 import logging
 from typing import Callable, Optional
@@ -53,6 +54,8 @@ class GPT4(BaseLLM):
               ) -> tuple[str, str]:
         headers, payload = self._prepare_for_request(
             prompt, img_path_lst)
+        n_format_retries = 0
+        max_format_retries = 5
         while True:
             response = self._send_request(headers, payload)
 
@@ -64,6 +67,11 @@ class GPT4(BaseLLM):
             if format_check is not None:
                 valid, rsp_text = self._check_syntax(rsp_text, format_check)
                 if not valid:
+                    n_format_retries += 1
+                    if n_format_retries > max_format_retries:
+                        raise RuntimeError(
+                            "Too many invalid LLM response formats."
+                        )
                     continue
             return prompt, rsp_text
 
@@ -184,12 +192,12 @@ class GPT4(BaseLLM):
         If valid, returns the processed response (the valid response may be wrapped in something)."""
         # Check if the response is a valid Python object
         try:
-            obj = eval(rsp_text)
+            obj = literal_eval(rsp_text)
         except:
             # GPT may wrap the response in a code block
             inner_rsp_text = rsp_text.strip("```").lstrip("json").strip()
             try:
-                obj = eval(inner_rsp_text)
+                obj = literal_eval(inner_rsp_text)
                 rsp_text = inner_rsp_text
             except:
                 self._log("Failed to parse the response:", level='warning')

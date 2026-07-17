@@ -35,9 +35,9 @@ class DiffBIR(Tool):
         return [
             "--input", self.input_dir,
             "--config", Path(f"executor/{self.subtask}/configs/diffbir.yml").resolve(),
-            "--ckpt", "/root/autodl-tmp/AgenticIR/executor/super_resolution/tools/DiffBIR/weights/general_full_v1.ckpt",
+            "--ckpt", self.work_dir / "weights" / "general_full_v1.ckpt",
             "--reload_swinir",
-            "--swinir_ckpt", "/root/autodl-tmp/AgenticIR/executor/super_resolution/tools/DiffBIR/weights/general_swinir_v1.ckpt",
+            "--swinir_ckpt", self.work_dir / "weights" / "general_swinir_v1.ckpt",
             "--steps", "50",
             "--sr_scale", "4",
             "--color_fix_type", "wavelet",

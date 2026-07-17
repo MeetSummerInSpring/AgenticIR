@@ -1,4 +1,5 @@
 from pathlib import Path
+from ast import literal_eval
 import shutil
 import logging
 from time import localtime, strftime
@@ -220,7 +221,7 @@ class IRAgent:
         if self.evaluate_degradation_by == "gpt4v":
             evaluation = self.evaluate_degradation_by_gpt4v()
         else:
-            evaluation = eval(
+            evaluation = literal_eval(
                 self.depictqa(Path(self.cur_node["img_path"]), task="eval_degradation")
             )
         self.workflow_logger.info(f"Evaluation: {evaluation}")
@@ -247,7 +248,7 @@ class IRAgent:
                 "low resolution"
             }, f"Invalid degradation: {rsp_degradations}."
 
-        evaluation = eval(
+        evaluation = literal_eval(
             self.gpt4(
                 prompt=prompts.gpt_evaluate_degradation_prompt,
                 img_path=Path(self.cur_node["img_path"]),
@@ -286,7 +287,7 @@ class IRAgent:
             ) + ps,
             format_check=check_order,
         )
-        schedule = eval(schedule)
+        schedule = literal_eval(schedule)
         self.workflow_logger.info(f"Insights: {schedule['thought']}")
         return schedule["order"]
 
@@ -316,7 +317,7 @@ class IRAgent:
             ) + ps,
             format_check=check_order,
         )
-        return eval(order)
+        return literal_eval(order)
 
     def execute_subtask(self, cache: Optional[Path]) -> bool:
         """Invokes tools to try to execute the top subtask in `self.plan` on `self.cur_node["img_path"]`, the directory of which is "0-img". Returns success or not. Updates `self.plan` and `self.cur_node`. Generates a directory parallel to "0-img", containing multiple directories, each of which contains outputs of a tool.\n
@@ -420,7 +421,7 @@ class IRAgent:
         if self.reflect_by == "gpt4v":
             level = self.evaluate_tool_result_by_gpt4v(img_path, degradation)
         else:
-            level = eval(
+            level = literal_eval(
                 self.depictqa(
                     img_path=img_path, task="eval_degradation", degradation=degradation
                 )
@@ -439,7 +440,7 @@ class IRAgent:
             severity = evaluation["severity"]
             assert severity in self.levels, f"Invalid severity: {severity}."
 
-        degra_level = eval(
+        degra_level = literal_eval(
             self.gpt4(
                 prompt=prompts.gpt_evaluate_tool_result_prompt.format(
                     degradation=degradation
@@ -500,7 +501,7 @@ class IRAgent:
                 "neither",
             }, f"Invalid choice: {comparison['choice']}."
 
-        comparison: dict = eval(
+        comparison: dict = literal_eval(
             self.gpt4(
                 prompt=prompts.gpt_compare_prompt,
                 img_path=[img1, img2],
@@ -595,7 +596,8 @@ class IRAgent:
             for adjusted_plan in self.work_mem["plan"]["adjusted"]:
                 failed = adjusted_plan["failed"]
                 failed_done, failed_planned = failed.split(" + ")
-                failed_done, failed_planned = eval(failed_done), eval(failed_planned)
+                failed_done = literal_eval(failed_done)
+                failed_planned = literal_eval(failed_planned)
                 if failed_done == done_subtasks:
                     self.plan = failed_planned
                     self.workflow_logger.info(f"Pick up the failed plan {failed_done} + {failed_planned}.")

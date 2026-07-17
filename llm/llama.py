@@ -1,6 +1,7 @@
 # This script calls Llama API provided by https://www.llama-api.com/
 
 from pathlib import Path
+from ast import literal_eval
 import requests
 import logging
 from typing import Callable, Optional
@@ -120,12 +121,12 @@ class Llama(BaseLLM):
         """
         # Check if the response is a valid Python object
         try:
-            obj = eval(rsp_text)
+            obj = literal_eval(rsp_text)
         except:
             # GPT may wrap the response in a code block
             inner_rsp_text = rsp_text.strip("```").lstrip("json").strip()
             try:
-                obj = eval(inner_rsp_text)
+                obj = literal_eval(inner_rsp_text)
                 rsp_text = inner_rsp_text
             except:
                 self._log("Failed to parse the response:", level="warning")

@@ -22,11 +22,22 @@ class BasicSRModel(Tool):
 
     def _preprocess(self):
         """BasicSR requires a configuration file."""
+        def rebase_repo_paths(value):
+            if isinstance(value, dict):
+                return {key: rebase_repo_paths(item) for key, item in value.items()}
+            if isinstance(value, list):
+                return [rebase_repo_paths(item) for item in value]
+            if isinstance(value, str):
+                return value.replace(
+                    "/root/autodl-tmp/AgenticIR", str(self.repo_root)
+                )
+            return value
+
         # build the configuration file
-        cfg_path = Path().resolve() / 'executor' / self.subtask / \
+        cfg_path = self.repo_root / 'executor' / self.subtask / \
             'configs' / f'{self.tool_name}.yml'
         with open(cfg_path, 'r') as f:
-            cfg = yaml.safe_load(f)
+            cfg = rebase_repo_paths(yaml.safe_load(f))
         cfg['datasets']['test_1']['dataroot_lq'] = self.input_dir
         cfg['path']['results'] = str(self.output_dir)
 
@@ -120,7 +131,7 @@ class SwinIR(Tool):
         """Requires parameter `input_dir: Path`, `output_dir: Path`, `opt_task: str`, and `model_name: str`."""
         opts = [
             "--task", self.opt_task,
-            "--model_path", f"/root/autodl-tmp/AgenticIR/executor/denoising/tools/SwinIR/model_zoo/{self.model_name}",
+            "--model_path", self.work_dir / "model_zoo" / self.model_name,
             "--folder_lq", self.input_dir,
             "--save_dir", self.output_dir
         ]
@@ -243,7 +254,7 @@ class MAXIM(Tool):
         """Requires parameter `input_dir: Path`, `output_dir: Path`, `opt_task: str`, and `opt_ckpt_name: str`."""
         return [
             "--task", self.opt_task,
-            "--ckpt_path", f"/root/autodl-tmp/AgenticIR/executor/dehazing/tools/maxim/maxim/pretrained_models/{self.opt_ckpt_name}",
+            "--ckpt_path", self.work_dir / "maxim" / "pretrained_models" / self.opt_ckpt_name,
             "--input_dir", self.input_dir,
             "--output_dir", self.output_dir,
             "--has_target=False"

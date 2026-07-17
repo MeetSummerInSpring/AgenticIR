@@ -21,13 +21,14 @@ class Tool:
                  work_dir: Optional[Path] = None,
                  script_rel_path: Optional[Path | str] = None,
                  ):
+        self.repo_root: Path = Path(__file__).resolve().parents[1]
         self.tool_name: str = tool_name
         self.subtask: str = subtask
         self.work_dir: Optional[Path] = None
         self.script_path: Optional[Path] = None
         if work_dir is not None:
             assert script_rel_path is not None, "If `work_dir` is provided, `script_rel_path` should also be provided."
-            self.work_dir: Path = Path().resolve() / 'executor' / subtask / 'tools' / work_dir
+            self.work_dir: Path = self.repo_root / 'executor' / subtask / 'tools' / work_dir
             self.script_path: Path = self.work_dir / script_rel_path
 
     def __call__(self, input_dir: Path, output_dir: Path, silent: bool = False, *args) -> None:

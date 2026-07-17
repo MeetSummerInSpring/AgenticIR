@@ -83,3 +83,12 @@ dataset/synthesized/
 *.log
 *.tmp
 *.bak
+# ============================================================
+# Local third-party tools, datasets, and generated artifacts
+# ============================================================
+DepictQA/
+dataset/
+output_qx/
+exhaustive_sequences/
+test/
+executor/**/tools/

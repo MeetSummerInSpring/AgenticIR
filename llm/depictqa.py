@@ -8,6 +8,9 @@ from pipeline.prompts import depictqa_evaluate_degradation_prompt, depictqa_comp
 from utils.custom_types import Degradation, Level
 
 
+REQUEST_TIMEOUT_SECONDS = 300
+
+
 class DepictQA(BaseLLM):
     """Parameters when called: img_path_lst, task (eval_degradation or comp_quality), degradations (if task is eval_degradation)."""
 
@@ -73,7 +76,11 @@ class DepictQA(BaseLLM):
             )
             url = "http://127.0.0.1:5001/evaluate_degradation"
             payload = {"imageA_path": img.resolve(), "prompt": prompt}
-            rsp: str = requests.post(url, data=payload).json()["answer"]
+            response = requests.post(
+                url, data=payload, timeout=REQUEST_TIMEOUT_SECONDS
+            )
+            response.raise_for_status()
+            rsp: str = response.json()["answer"]
             assert rsp in levels, f"Unexpected response from DepictQA: {list(rsp)}"
             res.append((degradation, rsp))
 
@@ -90,7 +97,11 @@ class DepictQA(BaseLLM):
             "imageB_path": img2.resolve(),
             "prompt": prompt
         }
-        rsp: str = requests.post(url, data=payload).json()["answer"]
+        response = requests.post(
+            url, data=payload, timeout=REQUEST_TIMEOUT_SECONDS
+        )
+        response.raise_for_status()
+        rsp: str = response.json()["answer"]
 
         if "A" in rsp and "B" not in rsp:
             choice = "former"
