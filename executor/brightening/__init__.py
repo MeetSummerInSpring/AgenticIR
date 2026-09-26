@@ -3,10 +3,11 @@ from pathlib import Path
 import numpy as np
 
 from ..tool import Tool
-from ..multitask_tools import *
+from ..multitask_tools import MAXIM
+from .darkir import DarkIRMultiTask
 
 
-__all__ = ['brighten_toolbox']
+__all__ = ["brightening_toolbox"]
 
 
 class BrighteningTool(Tool):
@@ -65,6 +66,7 @@ class HistogramEqualization(BrighteningTool):
 
 subtask = 'brightening'
 brightening_toolbox = [
+    DarkIRMultiTask(),
     MAXIM(subtask='brightening'),
     HistogramEqualization(),
     GammaCorrection(),
