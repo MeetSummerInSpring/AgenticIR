@@ -1,11 +1,11 @@
 GPT:
   API_KEY: ""
-  MODEL: "gpt-4-turbo"
+  MODEL: "qwen3.5-plus-2026-04-20"
   MAX_TOKENS: 3000
   TEMPERATURE: 0.0
 
 LLAMA:
   API_KEY: ""
-  MODEL: "llama3.1-405b"
+  MODEL: ""
   MAX_TOKENS: 3000
   TEMPERATURE: 0.0

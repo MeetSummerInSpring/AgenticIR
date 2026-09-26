@@ -92,3 +92,15 @@ output_qx/
 exhaustive_sequences/
 test/
 executor/**/tools/
+
+# Append-only online agent memory (runtime-generated)
+memory/*.sqlite3
+memory/*.sqlite3-wal
+memory/*.sqlite3-shm
+
+# Local configuration, deployment archives, and scratch scripts
+/config.yml
+/vision_smoke/*.tar
+/test.py
+/test1.py
+/installation/deploy_tools1.sh
