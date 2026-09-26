@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>AgenticIR · 智能图像复原演示</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <div class="eyebrow">AGENTIC IMAGE RESTORATION</div>
+            <h1 id="run-title">智能图像复原演示</h1>
+          </div>
+        </div>
+        <div class="run-meta">
+          <span class="mode-badge"><i></i><span id="source-label">真实运行记录回放</span></span>
+          <span class="meta-item">任务 <strong id="run-id">—</strong></span>
+          <span class="meta-item">调用 <strong id="invocation-count">—</strong></span>
+          <span class="clock"><strong id="elapsed-time">00:00.0</strong><span>/</span><span id="total-time">00:00.0</span></span>
+        </div>
+      </header>
+
+      <main>
+        <nav class="stage-rail" id="stage-rail" aria-label="处理阶段"></nav>
+
+        <div class="workspace">
+          <section class="visual-column">
+            <div class="panel event-hero">
+              <div class="event-heading">
+                <div>
+                  <div class="source-line">
+                    <span class="source-badge" id="event-source">SYSTEM</span>
+                    <span id="event-time">T+00:00.0</span>
+                  </div>
+                  <h2 id="event-title">正在载入运行记录</h2>
+                  <p id="event-summary">请稍候…</p>
+                </div>
+                <button class="ghost-button" id="open-qa" hidden>
+                  查看模型原始问答
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+
+              <div class="image-grid">
+                <figure class="image-card">
+                  <figcaption><span>01</span> 原始输入</figcaption>
+                  <div class="image-wrap">
+                    <img id="input-image" alt="原始输入图像" />
+                  </div>
+                </figure>
+                <figure class="image-card current-card">
+                  <figcaption>
+                    <span id="current-image-index">02</span>
+                    <strong id="current-image-label">当前结果</strong>
+                    <em id="image-change-badge">等待处理</em>
+                  </figcaption>
+                  <div class="image-wrap">
+                    <img id="current-image" alt="当前处理结果" />
+                    <div class="scan-line" aria-hidden="true"></div>
+                  </div>
+                </figure>
+              </div>
+            </div>
+
+            <section class="panel reasoning-panel">
+              <div class="panel-title">
+                <div>
+                  <span class="section-index">02</span>
+                  <h3>决策与评估依据</h3>
+                </div>
+                <span class="truth-label">来自真实日志</span>
+              </div>
+              <div id="reasoning-content" class="reasoning-content"></div>
+            </section>
+          </section>
+
+          <aside class="panel timeline-panel">
+            <div class="panel-title timeline-heading">
+              <div>
+                <span class="section-index">03</span>
+                <h3>完整运行时间线</h3>
+              </div>
+              <span id="event-counter">0 / 0</span>
+            </div>
+            <div class="timeline" id="timeline"></div>
+          </aside>
+        </div>
+      </main>
+
+      <footer class="control-bar">
+        <button class="play-button" id="play-toggle" aria-label="播放或暂停">
+          <span id="play-icon">▶</span>
+        </button>
+        <button class="step-button" id="restart" title="重新播放">↺</button>
+        <div class="scrubber-wrap">
+          <input id="scrubber" type="range" min="0" max="100" value="0" step="0.01" aria-label="回放进度" />
+          <div class="scrubber-meta">
+            <span id="control-status">准备就绪</span>
+            <span id="control-event">—</span>
+          </div>
+        </div>
+        <div class="speed-controls" aria-label="播放速度">
+          <span>回放速度</span>
+          <button data-speed="1">1×</button>
+          <button data-speed="2">2×</button>
+          <button class="active" data-speed="4">4×</button>
+          <button data-speed="8">8×</button>
+        </div>
+      </footer>
+    </div>
+
+    <dialog id="qa-dialog">
+      <div class="dialog-shell">
+        <header>
+          <div>
+            <span class="source-badge" id="dialog-source">MODEL</span>
+            <h2>模型原始问答记录</h2>
+          </div>
+          <button id="close-dialog" aria-label="关闭">×</button>
+        </header>
+        <div class="dialog-columns">
+          <section>
+            <h3>输入问题 / 决策上下文</h3>
+            <pre id="dialog-question"></pre>
+          </section>
+          <section>
+            <h3>模型输出</h3>
+            <pre id="dialog-answer"></pre>
+          </section>
+        </div>
+        <footer id="dialog-usage"></footer>
+      </div>
+    </dialog>
+
+    <div class="error-screen" id="error-screen" hidden>
+      <div>
+        <span>!</span>
+        <h2>回放数据尚未就绪</h2>
+        <p id="error-message"></p>
+        <code>python -m demo.replay build &lt;运行目录&gt;</code>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
