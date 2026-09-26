@@ -23,6 +23,8 @@ class DepictQA(BaseLLM):
         super().__init__(
             log_path=log_path, logger=logger, silent=silent
         )  # set attributes: cfg, logger, silent
+        self.session = requests.Session()
+        self.session.trust_env = False
 
     def query(
         self,
@@ -76,7 +78,7 @@ class DepictQA(BaseLLM):
             )
             url = "http://127.0.0.1:5001/evaluate_degradation"
             payload = {"imageA_path": img.resolve(), "prompt": prompt}
-            response = requests.post(
+            response = self.session.post(
                 url, data=payload, timeout=REQUEST_TIMEOUT_SECONDS
             )
             response.raise_for_status()
@@ -97,7 +99,7 @@ class DepictQA(BaseLLM):
             "imageB_path": img2.resolve(),
             "prompt": prompt
         }
-        response = requests.post(
+        response = self.session.post(
             url, data=payload, timeout=REQUEST_TIMEOUT_SECONDS
         )
         response.raise_for_status()

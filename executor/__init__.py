@@ -15,10 +15,10 @@ from .deraining import deraining_toolbox
 from .brightening import brightening_toolbox
 from .jpeg_compression_artifact_removal import jpeg_compression_artifact_removal_toolbox
 
-from .tool import Tool
+from .tool import Tool, ToolExecutionError, ToolRunResult
 
 
-__all__ = ['executor']
+__all__ = ['executor', 'Tool', 'ToolExecutionError', 'ToolRunResult']
 
 
 class Executor:
