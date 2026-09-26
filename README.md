@@ -60,10 +60,15 @@ The data used in the paper can be downloaded from [this link](https://drive.goog
 To let the agent learn from exploration, run 
 + `python -m exploration.exhaust_seq` to generate images to explore;
 + `python -m exploration.explore` to accumulate experience by evaluating images;
-+ `python -m exploration.distill` to summarize the experience and distill knowledge.
++ `python -m exploration.distill` to deterministically build versioned scheduling rules in `memory/schedule_rules.json` from `memory/fail_rate.json`.
+
+### Local configuration
+Copy `config.example.yml` to `config.yml` and fill in your API credentials and model names. `config.yml` is local-only and is not tracked by Git.
 
 ### Inference
 Run `python -m pipeline.infer` to restore an image (path specified in `pipeline/infer.py`).
+
+By default, inference retrieves only condition-matched rules from `memory/schedule_rules.json`, ranks tools using `memory/tool_profiles.json`, and appends runtime events to the ignored local database `memory/episodes.sqlite3`. Tool subprocesses use an absolute Conda executable without shell activation and write stdout/stderr to per-tool log files instead of the terminal. Set `AGENTICIR_CONDA_EXE` when Conda is installed in a non-standard location and `AGENTICIR_TOOL_TIMEOUT_SECONDS` to override the default 1800-second timeout.
 
 ## BibTex
 ```
