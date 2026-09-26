@@ -1,0 +1,526 @@
+{
+  "schema_version": 1,
+  "source": "memory/fail_rate.json",
+  "rules": [
+    {
+      "rule_id": "order:dark+noise",
+      "condition": {
+        "degradations": [
+          "dark",
+          "noise"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "denoising",
+          "brightening"
+        ],
+        "total_failure_rate": 0.3222222222222222,
+        "runner_up_order": [
+          "brightening",
+          "denoising"
+        ],
+        "runner_up_total_failure_rate": 0.3486111111111111,
+        "failure_rate_margin": 0.026388888888888906,
+        "confidence": 0.22173986305964988,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 360,
+        "comparison_samples": 360
+      },
+      "candidates": [
+        {
+          "order": [
+            "denoising",
+            "brightening"
+          ],
+          "sample_count": 360,
+          "failure_counts": {
+            "dark": 78,
+            "noise": 154
+          },
+          "failure_rates": {
+            "dark": 0.21666666666666667,
+            "noise": 0.42777777777777776
+          },
+          "total_failure_rate": 0.3222222222222222
+        },
+        {
+          "order": [
+            "brightening",
+            "denoising"
+          ],
+          "sample_count": 360,
+          "failure_counts": {
+            "dark": 101,
+            "noise": 150
+          },
+          "failure_rates": {
+            "dark": 0.28055555555555556,
+            "noise": 0.4166666666666667
+          },
+          "total_failure_rate": 0.3486111111111111
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "dark+noise",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:defocus blur+haze",
+      "condition": {
+        "degradations": [
+          "defocus blur",
+          "haze"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "defocus deblurring",
+          "dehazing"
+        ],
+        "total_failure_rate": 0.18125,
+        "runner_up_order": [
+          "dehazing",
+          "defocus deblurring"
+        ],
+        "runner_up_total_failure_rate": 0.2,
+        "failure_rate_margin": 0.018750000000000017,
+        "confidence": 0.08091346598648108,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 240,
+        "comparison_samples": 240
+      },
+      "candidates": [
+        {
+          "order": [
+            "defocus deblurring",
+            "dehazing"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "defocus blur": 1,
+            "haze": 86
+          },
+          "failure_rates": {
+            "defocus blur": 0.004166666666666667,
+            "haze": 0.35833333333333334
+          },
+          "total_failure_rate": 0.18125
+        },
+        {
+          "order": [
+            "dehazing",
+            "defocus deblurring"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "defocus blur": 0,
+            "haze": 96
+          },
+          "failure_rates": {
+            "defocus blur": 0.0,
+            "haze": 0.4
+          },
+          "total_failure_rate": 0.2
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "defocus blur+haze",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:defocus blur+jpeg compression artifact",
+      "condition": {
+        "degradations": [
+          "defocus blur",
+          "jpeg compression artifact"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "jpeg compression artifact removal",
+          "defocus deblurring"
+        ],
+        "total_failure_rate": 0.20416666666666666,
+        "runner_up_order": [
+          "defocus deblurring",
+          "jpeg compression artifact removal"
+        ],
+        "runner_up_total_failure_rate": 0.27708333333333335,
+        "failure_rate_margin": 0.07291666666666669,
+        "confidence": 0.7208599541554463,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 240,
+        "comparison_samples": 240
+      },
+      "candidates": [
+        {
+          "order": [
+            "jpeg compression artifact removal",
+            "defocus deblurring"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "defocus blur": 24,
+            "jpeg compression artifact": 74
+          },
+          "failure_rates": {
+            "defocus blur": 0.1,
+            "jpeg compression artifact": 0.30833333333333335
+          },
+          "total_failure_rate": 0.20416666666666666
+        },
+        {
+          "order": [
+            "defocus deblurring",
+            "jpeg compression artifact removal"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "defocus blur": 19,
+            "jpeg compression artifact": 114
+          },
+          "failure_rates": {
+            "defocus blur": 0.07916666666666666,
+            "jpeg compression artifact": 0.475
+          },
+          "total_failure_rate": 0.27708333333333335
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "defocus blur+jpeg compression artifact",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:motion blur+dark",
+      "condition": {
+        "degradations": [
+          "motion blur",
+          "dark"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "motion deblurring",
+          "brightening"
+        ],
+        "total_failure_rate": 0.23125,
+        "runner_up_order": [
+          "brightening",
+          "motion deblurring"
+        ],
+        "runner_up_total_failure_rate": 0.2604166666666667,
+        "failure_rate_margin": 0.029166666666666674,
+        "confidence": 0.18467352788266822,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 240,
+        "comparison_samples": 240
+      },
+      "candidates": [
+        {
+          "order": [
+            "motion deblurring",
+            "brightening"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "motion blur": 52,
+            "dark": 59
+          },
+          "failure_rates": {
+            "motion blur": 0.21666666666666667,
+            "dark": 0.24583333333333332
+          },
+          "total_failure_rate": 0.23125
+        },
+        {
+          "order": [
+            "brightening",
+            "motion deblurring"
+          ],
+          "sample_count": 240,
+          "failure_counts": {
+            "motion blur": 66,
+            "dark": 59
+          },
+          "failure_rates": {
+            "motion blur": 0.275,
+            "dark": 0.24583333333333332
+          },
+          "total_failure_rate": 0.2604166666666667
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "motion blur+dark",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:motion blur+low resolution",
+      "condition": {
+        "degradations": [
+          "motion blur",
+          "low resolution"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "motion deblurring",
+          "super-resolution"
+        ],
+        "total_failure_rate": 0.1625,
+        "runner_up_order": [
+          "super-resolution",
+          "motion deblurring"
+        ],
+        "runner_up_total_failure_rate": 0.18625,
+        "failure_rate_margin": 0.023749999999999993,
+        "confidence": 0.20198269794963508,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 400,
+        "comparison_samples": 400
+      },
+      "candidates": [
+        {
+          "order": [
+            "motion deblurring",
+            "super-resolution"
+          ],
+          "sample_count": 400,
+          "failure_counts": {
+            "motion blur": 93,
+            "low resolution": 37
+          },
+          "failure_rates": {
+            "motion blur": 0.2325,
+            "low resolution": 0.0925
+          },
+          "total_failure_rate": 0.1625
+        },
+        {
+          "order": [
+            "super-resolution",
+            "motion deblurring"
+          ],
+          "sample_count": 400,
+          "failure_counts": {
+            "motion blur": 123,
+            "low resolution": 26
+          },
+          "failure_rates": {
+            "motion blur": 0.3075,
+            "low resolution": 0.065
+          },
+          "total_failure_rate": 0.18625
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "motion blur+low resolution",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:noise+jpeg compression artifact",
+      "condition": {
+        "degradations": [
+          "noise",
+          "jpeg compression artifact"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "denoising",
+          "jpeg compression artifact removal"
+        ],
+        "total_failure_rate": 0.25625000000000003,
+        "runner_up_order": [
+          "jpeg compression artifact removal",
+          "denoising"
+        ],
+        "runner_up_total_failure_rate": 0.259375,
+        "failure_rate_margin": 0.003124999999999989,
+        "confidence": 0.00467653081791497,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 480,
+        "comparison_samples": 480
+      },
+      "candidates": [
+        {
+          "order": [
+            "denoising",
+            "jpeg compression artifact removal"
+          ],
+          "sample_count": 480,
+          "failure_counts": {
+            "noise": 184,
+            "jpeg compression artifact": 62
+          },
+          "failure_rates": {
+            "noise": 0.38333333333333336,
+            "jpeg compression artifact": 0.12916666666666668
+          },
+          "total_failure_rate": 0.25625000000000003
+        },
+        {
+          "order": [
+            "jpeg compression artifact removal",
+            "denoising"
+          ],
+          "sample_count": 480,
+          "failure_counts": {
+            "noise": 183,
+            "jpeg compression artifact": 66
+          },
+          "failure_rates": {
+            "noise": 0.38125,
+            "jpeg compression artifact": 0.1375
+          },
+          "total_failure_rate": 0.259375
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "noise+jpeg compression artifact",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:rain+haze",
+      "condition": {
+        "degradations": [
+          "rain",
+          "haze"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "deraining",
+          "dehazing"
+        ],
+        "total_failure_rate": 0.209375,
+        "runner_up_order": [
+          "dehazing",
+          "deraining"
+        ],
+        "runner_up_total_failure_rate": 0.24375,
+        "failure_rate_margin": 0.03437499999999999,
+        "confidence": 0.3148551477935725,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 320,
+        "comparison_samples": 320
+      },
+      "candidates": [
+        {
+          "order": [
+            "deraining",
+            "dehazing"
+          ],
+          "sample_count": 320,
+          "failure_counts": {
+            "rain": 15,
+            "haze": 119
+          },
+          "failure_rates": {
+            "rain": 0.046875,
+            "haze": 0.371875
+          },
+          "total_failure_rate": 0.209375
+        },
+        {
+          "order": [
+            "dehazing",
+            "deraining"
+          ],
+          "sample_count": 320,
+          "failure_counts": {
+            "rain": 80,
+            "haze": 76
+          },
+          "failure_rates": {
+            "rain": 0.25,
+            "haze": 0.2375
+          },
+          "total_failure_rate": 0.24375
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "rain+haze",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    },
+    {
+      "rule_id": "order:rain+low resolution",
+      "condition": {
+        "degradations": [
+          "rain",
+          "low resolution"
+        ]
+      },
+      "recommendation": {
+        "order": [
+          "deraining",
+          "super-resolution"
+        ],
+        "total_failure_rate": 0.14,
+        "runner_up_order": [
+          "super-resolution",
+          "deraining"
+        ],
+        "runner_up_total_failure_rate": 0.31625,
+        "failure_rate_margin": 0.17624999999999996,
+        "confidence": 0.9999959856093883,
+        "confidence_method": "bounded_mean_margin_v1",
+        "supporting_samples": 400,
+        "comparison_samples": 400
+      },
+      "candidates": [
+        {
+          "order": [
+            "deraining",
+            "super-resolution"
+          ],
+          "sample_count": 400,
+          "failure_counts": {
+            "rain": 103,
+            "low resolution": 9
+          },
+          "failure_rates": {
+            "rain": 0.2575,
+            "low resolution": 0.0225
+          },
+          "total_failure_rate": 0.14
+        },
+        {
+          "order": [
+            "super-resolution",
+            "deraining"
+          ],
+          "sample_count": 400,
+          "failure_counts": {
+            "rain": 251,
+            "low resolution": 2
+          },
+          "failure_rates": {
+            "rain": 0.6275,
+            "low resolution": 0.005
+          },
+          "total_failure_rate": 0.31625
+        }
+      ],
+      "provenance": {
+        "source_path": "memory/fail_rate.json",
+        "source_key": "rain+low resolution",
+        "aggregation": "Mean of per-degradation binary failure rates; lower is better."
+      }
+    }
+  ]
+}

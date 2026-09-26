@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "defaults": {
+    "max_tools": 3,
+    "minimum_observations_for_pruning": 3,
+    "quality_weight": 0.75,
+    "latency_weight": 0.2,
+    "vram_weight": 0.05,
+    "exploration_rate": 0.05
+  },
+  "subtasks": {
+    "super-resolution": {
+      "tools": {
+        "diffbir": {"priority": 0},
+        "swinir_gan": {"priority": 1},
+        "swinir_psnr": {"priority": 2},
+        "hat": {"priority": 3}
+      }
+    },
+    "denoising": {
+      "tools": {
+        "xrestormer": {"priority": 0},
+        "swinir_15": {"priority": 1},
+        "swinir_50": {"priority": 2},
+        "mprnet": {"priority": 3},
+        "maxim": {"priority": 4},
+        "restormer": {"priority": 5}
+      }
+    },
+    "motion deblurring": {
+      "tools": {
+        "restormer": {"priority": 0},
+        "mprnet": {"priority": 1},
+        "maxim": {"priority": 2},
+        "xrestormer": {"priority": 3}
+      }
+    },
+    "defocus deblurring": {
+      "max_tools": 2,
+      "tools": {
+        "drbnet": {"priority": 0},
+        "restormer": {"priority": 1}
+      }
+    },
+    "deraining": {
+      "tools": {
+        "maxim": {"priority": 0},
+        "xrestormer": {"priority": 1},
+        "restormer": {"priority": 2},
+        "mprnet": {"priority": 3}
+      }
+    },
+    "dehazing": {
+      "tools": {
+        "xrestormer": {"priority": 0},
+        "ridcp": {"priority": 1},
+        "dehazeformer": {"priority": 2},
+        "maxim": {"priority": 3}
+      }
+    },
+    "brightening": {
+      "tools": {
+        "darkir_mt": {"priority": 0},
+        "maxim": {"priority": 1},
+        "histogram_equalization": {"priority": 2},
+        "gamma_correction": {"priority": 3},
+        "constant_shift": {"priority": 4}
+      }
+    },
+    "jpeg compression artifact removal": {
+      "tools": {
+        "fbcnn_blind": {"priority": 0},
+        "fbcnn_5": {"priority": 1},
+        "fbcnn_90": {"priority": 2},
+        "swinir_40": {"priority": 3}
+      }
+    }
+  }
+}

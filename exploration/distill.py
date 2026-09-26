@@ -1,48 +1,147 @@
+from __future__ import annotations
+
+import argparse
 import json
+import math
+from pathlib import Path
+from typing import Any
 
-from llm import GPT4
-from llm import Llama
-from pipeline import prompts
+
+SCHEMA_VERSION = 1
 
 
-def build_one_exp(degradations, experience):
-    this_exp = f"To address {degradations} in the image, "
-    for exe_path, stat in experience.items():
-        plan = exe_path.split('+')
-        degras, fail_rates = [], []
-        for degra, fail_rate in stat['fail rate'].items():
-            if degra != "total":
-                degras.append(degra)
-                fail_rates.append(f"{fail_rate:.0%}")
-        this_exp += (
-            f"when conducting first {plan[0]} and then {plan[1]}, "
-            f"the fail rates of addressing {degras} are {fail_rates} respectively, "
-            f"and the total fail rate is {stat['fail rate']['total']:.0%}; "
+def _candidate_from_statistics(
+    execution_path: str,
+    statistics: dict[str, Any],
+) -> dict[str, Any]:
+    sample_count = int(statistics["total"])
+    failure_rates = {
+        degradation: float(value)
+        for degradation, value in statistics["fail rate"].items()
+        if degradation != "total"
+    }
+    failure_counts = {
+        degradation: int(statistics[degradation])
+        for degradation in failure_rates
+    }
+    return {
+        "order": execution_path.split("+"),
+        "sample_count": sample_count,
+        "failure_counts": failure_counts,
+        "failure_rates": failure_rates,
+        "total_failure_rate": float(statistics["fail rate"]["total"]),
+    }
+
+
+def _ordering_confidence(
+    best: dict[str, Any],
+    runner_up: dict[str, Any],
+) -> float:
+    """Bound-inspired confidence from aggregate bounded failure observations."""
+
+    margin = (
+        runner_up["total_failure_rate"]
+        - best["total_failure_rate"]
+    )
+    if margin <= 0:
+        return 0.0
+
+    n_best = best["sample_count"]
+    n_runner_up = runner_up["sample_count"]
+    denominator = (1.0 / n_best) + (1.0 / n_runner_up)
+    confidence = 1.0 - math.exp(-2.0 * margin * margin / denominator)
+    return min(max(confidence, 0.0), 1.0)
+
+
+def build_rules(
+    fail_rate_hub: dict[str, Any],
+    *,
+    source_path: str,
+) -> dict[str, Any]:
+    rules = []
+    for degradation_key, plan_statistics in sorted(fail_rate_hub.items()):
+        candidates = [
+            _candidate_from_statistics(execution_path, statistics)
+            for execution_path, statistics in plan_statistics.items()
+        ]
+        candidates.sort(
+            key=lambda candidate: (
+                candidate["total_failure_rate"],
+                candidate["order"],
+            )
         )
-    this_exp = this_exp[:-2] + '.'  # change "; " to "."
-    return this_exp
+        if not candidates:
+            continue
+
+        best = candidates[0]
+        runner_up = candidates[1] if len(candidates) > 1 else candidates[0]
+        margin = max(
+            0.0,
+            runner_up["total_failure_rate"] - best["total_failure_rate"],
+        )
+        rules.append(
+            {
+                "rule_id": f"order:{degradation_key}",
+                "condition": {
+                    "degradations": degradation_key.split("+"),
+                },
+                "recommendation": {
+                    "order": best["order"],
+                    "total_failure_rate": best["total_failure_rate"],
+                    "runner_up_order": runner_up["order"],
+                    "runner_up_total_failure_rate": runner_up["total_failure_rate"],
+                    "failure_rate_margin": margin,
+                    "confidence": _ordering_confidence(best, runner_up),
+                    "confidence_method": "bounded_mean_margin_v1",
+                    "supporting_samples": best["sample_count"],
+                    "comparison_samples": runner_up["sample_count"],
+                },
+                "candidates": candidates,
+                "provenance": {
+                    "source_path": source_path,
+                    "source_key": degradation_key,
+                    "aggregation": (
+                        "Mean of per-degradation binary failure rates; "
+                        "lower is better."
+                    ),
+                },
+            }
+        )
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "source": source_path,
+        "rules": rules,
+    }
 
 
-with open("memory/fail_rate.json") as f:
-    experience_hub = json.load(f)
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Build structured scheduling rules from exploration statistics."
+    )
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=Path("memory/fail_rate.json"),
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("memory/schedule_rules.json"),
+    )
+    args = parser.parse_args()
 
-exp_lst = []
-for degras, exp in experience_hub.items():
-    exp_lst.append(build_one_exp(degras, exp))
-exp = '\n'.join(exp_lst)
-prompt = prompts.distill_knowledge_prompt.format(experience=exp)
-gpt = GPT4(system_message=prompts.system_message)
-# llama = Llama(system_message=prompts.system_message)
-distilled = gpt(prompt=prompt)
-# distilled = llama(prompt=prompt)
+    with args.input.open("r", encoding="utf-8") as file:
+        fail_rate_hub = json.load(file)
+    rules = build_rules(fail_rate_hub, source_path=str(args.input))
 
-schedule_experience = {
-    "raw": exp,
-    "distilled": distilled
-}
-print(prompt)
-print("--------------------------------------------------")
-print(distilled)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("w", encoding="utf-8") as file:
+        json.dump(rules, file, ensure_ascii=False, indent=2)
+        file.write("\n")
 
-with open("memory/schedule_experience.json", "w") as f:
-    json.dump(schedule_experience, f, indent=2)
+    print(f"Wrote {len(rules['rules'])} structured rules to {args.output}.")
+
+
+if __name__ == "__main__":
+    main()

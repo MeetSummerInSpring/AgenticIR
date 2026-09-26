@@ -15,5 +15,7 @@ agent = IRAgent(
     silent=False
 )
 
-manual_plan = ['brightening']
+# Set a non-empty list to run a manual plan, or None for automatic planning.
+# manual_plan = ["dehazing", "denoising"]
+manual_plan = None
 agent.run(plan=manual_plan)

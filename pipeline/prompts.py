@@ -45,9 +45,12 @@ distill_knowledge_prompt = """We are studying image restoration with multiple de
 {experience}
 Please distill knowledge from this experience that will be valuable for determining the order of tasks. Note that the degradations can be more complex than what we have encountered above."""
 
-schedule_w_retrieval_prompt = """There's an image suffering from degradations {degradations}. We will invoke dedicated tools to address these degradations, i.e., we will conduct these tasks: {agenda}. Now we need to determine the order of these unordered tasks. For your information, based on past trials, we have the following experience:
+schedule_w_retrieval_prompt = """There is an image suffering from degradations {degradations}. We will invoke dedicated tools to address these degradations, i.e., we will conduct these tasks: {agenda}. Now we need to determine the order of these unordered tasks.
+
+The following JSON contains only condition-matched evidence from past trials:
 {experience}
-Based on this experience, please give the correct order of the tasks. Your output must be a JSON object with two fields: "thought" and "order", where "order" must be a permutation of {agenda} in the order you determine."""
+
+Use matched rules as conditional evidence, not hard constraints. Treat every numeric field as immutable: do not recalculate, alter, or invent statistics. If no rule matches, determine the order from image-restoration principles. Your output must be a JSON object with exactly two fields, "thought" and "order", where "order" must be a permutation of {agenda} in the order you determine."""
 
 reason_to_schedule_prompt = """There's an image suffering from degradations {degradations}. We will invoke dedicated tools to address these degradations, i.e., we will conduct these tasks: {agenda}. Please provide some insights into the correct order of these unordered tasks. You should pay special attention to the essence and side-effects of these tasks."""
 
