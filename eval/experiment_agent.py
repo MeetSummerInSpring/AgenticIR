@@ -1,0 +1,60 @@
+"""Small isolated experiment adapter; production IRAgent defaults stay intact."""
+import copy
+from pathlib import Path
+from pipeline.iragent import IRAgent
+from utils.episode_store import EpisodeStore
+
+
+from .frozen_statistics import FrozenStatistics
+from .text_planner import TextTransport, MODEL
+
+
+class RegistrySelector:
+    def select(self, subtask, tools):
+        return list(tools), [{'tool_name':t.tool_name,'selected':True,'policy':'registry_order'} for t in tools]
+
+
+class ExperimentAgent(IRAgent):
+    def __init__(self, *args, selector_policy='current', memory_read='frozen',
+                 memory_snapshot=None, memory_update=False, log_events=True, max_tool_calls=8, max_llm_calls=20, **kwargs):
+        if kwargs.get('evaluate_degradation_by','depictqa') != 'depictqa' or kwargs.get('reflect_by','depictqa') != 'depictqa':
+            raise ValueError('experiment vision must use local DepictQA; external transport is text-only')
+        self.log_events = log_events; self.llm_calls=0; self.tool_calls=0; self.local_evaluation_calls=0
+        super().__init__(*args, **kwargs)
+        self.executor = copy.copy(self.executor)
+        owner = self
+        class BudgetedTool:
+            def __init__(self, tool): self.tool=tool; self.tool_name=tool.tool_name
+            def __call__(self, *args, **kwargs):
+                if owner.tool_calls >= max_tool_calls: raise RuntimeError('tool call budget exhausted')
+                owner.tool_calls += 1
+                return self.tool(*args, **kwargs)
+        self.executor.toolbox_router = {s:[BudgetedTool(t) for t in ts] for s,ts in self.executor.toolbox_router.items()}
+        if self.gpt4.model != MODEL:
+            raise ValueError('planner model differs from frozen experiment model')
+        transport=TextTransport(self.work_dir/'text_usage.jsonl',max_calls=max_llm_calls)
+        def send_request(headers,payload):
+            try:return transport(headers,payload)
+            finally:self.llm_calls=transport.calls
+        self.gpt4._send_request=send_request
+        if self.depictqa:
+            local_post=self.depictqa.session.post
+            def counted_post(*args,**kwargs):
+                self.local_evaluation_calls+=1
+                return local_post(*args,**kwargs)
+            self.depictqa.session.post=counted_post
+        if selector_policy == 'registry': self.tool_selector = RegistrySelector()
+        elif not memory_update:
+            source = EpisodeStore(Path(memory_snapshot)) if memory_read=='frozen' and memory_snapshot else None
+            def current_context():
+                from PIL import Image
+                with Image.open(self.cur_node['img_path']) as im:
+                    scale=max(im.size)
+                return {'scale_long_edge':scale,'observed_rain_severity':self.cur_node.get('state',{}).get('rain')}
+            self.tool_selector.episode_store = FrozenStatistics(source, context=current_context)
+        elif memory_read == 'off':
+            raise ValueError('online update requires memory reads')
+
+    def _append_episode_event(self, **kwargs):
+        if self.log_events: return super()._append_episode_event(**kwargs)
+        return ''

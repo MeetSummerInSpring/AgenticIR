@@ -486,7 +486,10 @@ class IRAgent:
                     },
                     provenance={"tool_class": type(tool).__name__},
                 )
-                raise
+                self.workflow_logger.warning(
+                    "Candidate execution failed; trying the next registered candidate: %s", exc
+                )
+                continue
 
             try:
                 if self.with_reflection:

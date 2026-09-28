@@ -104,3 +104,8 @@ memory/*.sqlite3-shm
 /test.py
 /test1.py
 /installation/deploy_tools1.sh
+
+# Frozen input packages and local research evidence (never source control)
+/0927/
+/0928/
+/experiments/

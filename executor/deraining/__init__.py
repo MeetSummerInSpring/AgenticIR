@@ -2,6 +2,7 @@ import os
 
 from ..tool import Tool
 from ..multitask_tools import *
+from .histoformer import HistoformerReal
 
 
 __all__ = ['deraining_toolbox']
@@ -13,4 +14,5 @@ deraining_toolbox = [
     XRestormer(subtask=subtask),
     Restormer(subtask=subtask),
     MPRNet(subtask=subtask),
+    HistoformerReal(),
 ]

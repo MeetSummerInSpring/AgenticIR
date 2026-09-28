@@ -1,0 +1,10 @@
+--- a/DepictQA/src/app_eval.py
++++ b/DepictQA/src/app_eval.py
+@@ -91 +91 @@
+-    serve(app, host="0.0.0.0", port=5001)
++    serve(app, host="127.0.0.1", port=5001)
+--- a/DepictQA/src/app_comp.py
++++ b/DepictQA/src/app_comp.py
+@@ -93 +93 @@
+-    serve(app, host="0.0.0.0", port=5002)
++    serve(app, host="127.0.0.1", port=5002)

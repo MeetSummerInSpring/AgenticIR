@@ -1,0 +1,10 @@
+inp_channels: 3
+out_channels: 3
+dim: 36
+num_blocks: [4, 4, 6, 8]
+num_refinement_blocks: 4
+heads: [1, 2, 4, 8]
+ffn_expansion_factor: 2.667
+bias: false
+LayerNorm_type: WithBias
+dual_pixel_task: false
