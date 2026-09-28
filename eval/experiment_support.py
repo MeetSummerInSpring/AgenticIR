@@ -26,7 +26,7 @@ def fingerprint(value):
 
 
 def code_hashes():
-    roots=['eval/manifest_io.py','eval/experiment_support.py','eval/tool_study.py','eval/run_manifest.py','eval/experiment_agent.py','eval/text_planner.py','eval/frozen_statistics.py','pipeline/iragent.py']
+    roots=['eval/manifest_io.py','eval/experiment_support.py','eval/tool_study.py','eval/run_manifest.py','eval/experiment_agent.py','eval/text_planner.py','eval/frozen_statistics.py','eval/prepare_holdout.py','eval/staged_service.py','eval/perception_probe.py','pipeline/iragent.py']
     files=[Path(p) for p in roots if Path(p).exists()]
     for root in ['utils','llm','executor']:
         files += [p for p in (p for p in Path(root).rglob('*.py') if 'tools' not in p.parts)]

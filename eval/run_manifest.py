@@ -25,7 +25,11 @@ def main():
     p.add_argument('--schedule',choices=['on','off']); p.add_argument('--selector',choices=['current','registry'])
     p.add_argument('--memory-read',choices=['off','frozen'],default='frozen'); p.add_argument('--memory-snapshot'); p.add_argument('--memory-update',action='store_true'); p.add_argument('--no-event-log',action='store_true')
     p.add_argument('--max-tool-calls',type=int,default=8); p.add_argument('--max-llm-calls',type=int,default=20); p.add_argument('--seed',type=int,default=2700); p.add_argument('--timeout',type=int,default=1800)
+    p.add_argument('--staged-gpu', help='allocated GPU UUID for sequential live local services')
+    p.add_argument('--catalog', help='JSON mapping every task to available tools; staging only')
     a=p.parse_args()
+    if a.catalog and not a.staged_gpu: p.error('--catalog requires --staged-gpu')
+    if a.staged_gpu and a.method=='restormer_smoke': p.error('staging requires an agent method')
     if a.mode=='manual' and not a.plan: p.error('manual mode requires --plan')
     if a.mode=='auto' and a.plan: p.error('auto mode cannot receive a plan')
     if a.limit<1 or a.max_tool_calls<1 or a.max_llm_calls<1: p.error('limits must be positive')
@@ -49,6 +53,7 @@ def main():
     config['planner']={k:v for k,v in llm_cfg['GPT'].items() if 'KEY' not in k and 'SECRET' not in k}
     if config['planner']['MODEL'] != MODEL: raise ValueError('wrong text planner model')
     config['code']=code_hashes()
+    config['catalog_sha256']=sha256(a.catalog) if a.catalog else None
     config['memory_sha256']=sha256(a.memory_snapshot) if a.memory_snapshot else None
     config['input_hashes']={r['sample_id']:sha256(r['input_path']) for r in selected}
     config['policies']={n:sha256(Path('memory')/n) for n in ['schedule_rules.json','tool_profiles.json']}
@@ -91,7 +96,7 @@ def main():
         row={k:r.get(k,'') for k in ['sample_id','domain','role','split','group_id','condition','input_path','reference_path']}
         row.update(input_sha256=sha256(r['input_path']),method=a.method,mode=a.mode,status='failed',output_path='',error='',duration_seconds='',n_invocations='',topk_decisions='',ranking_decisions='')
         started=time.monotonic(); work=out/'runs'/r['sample_id']; work.mkdir(parents=True,exist_ok=True)
-        agent=None
+        agent=None; controller=None
         try:
             import random,numpy as np,torch
             random.seed(a.seed); np.random.seed(a.seed); torch.manual_seed(a.seed); torch.cuda.manual_seed_all(a.seed)
@@ -112,6 +117,10 @@ def main():
                     episode_store_path=out/'events.sqlite3',tool_profile_path=out/'tool_profiles.json',
                     selector_policy=config['selector'],memory_read=a.memory_read,memory_snapshot=snapshot if snapshot.exists() else None,
                     memory_update=a.memory_update,log_events=not a.no_event_log,max_tool_calls=a.max_tool_calls,max_llm_calls=a.max_llm_calls,random_seed=a.seed,silent=True)
+                if a.staged_gpu:
+                    from .staged_service import StagedServices, attach_staging
+                    controller=StagedServices(work/'local_services',a.staged_gpu)
+                    attach_staging(agent,controller,json.loads(Path(a.catalog).read_text()) if a.catalog else None)
                 agent.run(plan=a.plan.split(',') if a.mode=='manual' else None)
                 output=agent.work_dir/'result.png'
             if pixels(output).shape!=pixels(r['input_path']).shape: raise ValueError('output size differs; no scoring resize permitted')
@@ -121,6 +130,12 @@ def main():
             (work/'error.txt').write_text(traceback.format_exc())
         finally:
             signal.alarm(0)
+            if controller:
+                try: controller.release()
+                except Exception as cleanup_error:
+                    row.update(status='failed',error='service cleanup failed: '+str(cleanup_error))
+                row['local_model_starts']=controller.starts
+                row['deployment']='single_gpu_live_staged'
             if agent:
                 (work/'agent_summary.json').write_text(json.dumps(agent.work_mem,default=str,indent=2))
                 ranks=agent.work_mem['tool_rankings']; row['n_invocations']=agent.work_mem['n_invocations']
