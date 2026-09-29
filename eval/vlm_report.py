@@ -81,11 +81,11 @@ def build(root,out):
     ax[0].set(xlabel='Optimizer updates',ylabel='Mean response token loss',title='Training (loss is not quality)');ax[0].legend()
     x=np.arange(3);width=.34
     for i,arm in enumerate(['baseline','fresh']):
-        vals=[detailed[d+'/'+arm+'/option_likelihood']['macro_accuracy'] for d in ['new_test','generic','tianlian']]
+        vals=[detailed[d+'/'+arm+'/option_likelihood']['class_accuracy']['Tie'] for d in ['new_test','generic','tianlian']]
         ax[1].bar(x+(i-.5)*width,vals,width,label=arm,color=colors[arm])
         vals=[detailed['new_test/'+arm+'/option_likelihood']['class_accuracy'][c] for c in LABELS]
         ax[2].bar(np.arange(4)+(i-.5)*width,vals,width,label=arm,color=colors[arm])
-    ax[1].set(xticks=x,xticklabels=['New road (208)','HQ (96)','Tianlian (32)'],ylim=(0,1),ylabel='Present-class macro accuracy',title='Same four-option likelihood')
+    ax[1].set(xticks=x,xticklabels=['New road (26)','HQ (24)','Tianlian (8)'],ylim=(0,1),ylabel='Exact-identity Tie accuracy',title='Tie retention: same option likelihood')
     ax[2].set(xticks=np.arange(4),xticklabels=LABELS,ylim=(0,1),ylabel='Class accuracy',title='New road: 78 / 78 / 26 / 26 QA');ax[2].legend()
     native=[detailed['new_test/'+arm+'/native_prompt']['accuracy'] for arm in ['baseline','fresh']]
     ax[3].bar(['baseline','fresh'],native,color=[colors['baseline'],colors['fresh']])
