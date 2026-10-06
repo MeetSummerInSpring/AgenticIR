@@ -17,7 +17,8 @@ def start_time(pid):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['start','stop']);p.add_argument('--mode',choices=['severity','compare'],required=True);p.add_argument('--out',required=True);p.add_argument('--gpu',required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['start','stop']);p.add_argument('--mode',choices=['severity','compare'],required=True);p.add_argument('--out',required=True);p.add_argument('--gpu',required=True);p.add_argument('--adapter',help='isolated comparison-only frozen adapter experiment');a=p.parse_args()
+    if a.adapter and a.mode!='compare':p.error('--adapter is comparison-only')
     out=Path(a.out).resolve();out.mkdir(parents=True,exist_ok=True);pidfile=out/(a.mode+'_owned_process.json')
     if a.action=='stop':
         if not pidfile.exists():raise RuntimeError('no owned process record')
@@ -51,10 +52,16 @@ def main():
     root=Path('DepictQA').resolve()
     if 'serve(app, host="127.0.0.1"' not in (root/script).read_text():
         raise RuntimeError('apply installation/depictqa_localhost.patch before starting local evaluation services')
+    adapter_sha256=sha256(a.adapter) if a.adapter else None
     log=(out/(a.mode+'_startup.log')).open('w')
-    proc=subprocess.Popen(['/root/autodl-tmp/conda/envs/depictqa/bin/python','-u',script],cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+    command=['/root/autodl-tmp/conda/envs/depictqa/bin/python','-u',script]
+    cwd=root
+    if a.adapter:
+        script='eval.comparison_service';cwd=root.parent
+        command=['/root/autodl-tmp/conda/envs/depictqa/bin/python','-u','-m',script,'--adapter',str(Path(a.adapter).resolve()),'--identity',str(out/'adapter_identity.json')]
+    proc=subprocess.Popen(command,cwd=cwd,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
     cfg=root/'experiments/agenticir'/('config_eval.yaml' if a.mode=='severity' else 'config_comp.yaml')
-    record={'pid':proc.pid,'start_time':start_time(proc.pid),'script':script,'gpu_uuid':a.gpu,'logical_cuda_device':0,'config_sha256':sha256(cfg),'host':'127.0.0.1','port':5001 if a.mode=='severity' else 5002}
+    record={'pid':proc.pid,'start_time':start_time(proc.pid),'script':script,'gpu_uuid':a.gpu,'logical_cuda_device':0,'config_sha256':sha256(cfg),'host':'127.0.0.1','port':5001 if a.mode=='severity' else 5002,'adapter_sha256':adapter_sha256}
     atomic_json(pidfile,record)
     for _ in range(180):
         if proc.poll() is not None:raise RuntimeError('service startup exited '+str(proc.returncode))

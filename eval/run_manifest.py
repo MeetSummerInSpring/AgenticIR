@@ -26,9 +26,9 @@ def main():
     p.add_argument('--memory-read',choices=['off','frozen'],default='frozen'); p.add_argument('--memory-snapshot'); p.add_argument('--memory-update',action='store_true'); p.add_argument('--no-event-log',action='store_true')
     p.add_argument('--max-tool-calls',type=int,default=8); p.add_argument('--max-llm-calls',type=int,default=20); p.add_argument('--seed',type=int,default=2700); p.add_argument('--timeout',type=int,default=1800)
     p.add_argument('--staged-gpu', help='allocated GPU UUID for sequential live local services')
-    p.add_argument('--catalog', help='JSON mapping every task to available tools; staging only')
+    p.add_argument('--catalog', help='JSON mapping every task to available tools')
+    p.add_argument('--tool-profile', help='explicit frozen experimental selection profile')
     a=p.parse_args()
-    if a.catalog and not a.staged_gpu: p.error('--catalog requires --staged-gpu')
     if a.staged_gpu and a.method=='restormer_smoke': p.error('staging requires an agent method')
     if a.mode=='manual' and not a.plan: p.error('manual mode requires --plan')
     if a.mode=='auto' and a.plan: p.error('auto mode cannot receive a plan')
@@ -56,7 +56,7 @@ def main():
     config['catalog_sha256']=sha256(a.catalog) if a.catalog else None
     config['memory_sha256']=sha256(a.memory_snapshot) if a.memory_snapshot else None
     config['input_hashes']={r['sample_id']:sha256(r['input_path']) for r in selected}
-    config['policies']={n:sha256(Path('memory')/n) for n in ['schedule_rules.json','tool_profiles.json']}
+    config['policies']={n:sha256(Path(a.tool_profile) if n=='tool_profiles.json' and a.tool_profile else Path('memory')/n) for n in ['schedule_rules.json','tool_profiles.json']}
     config['tool_inventory']={str(p):sha256(p) for p in Path('executor').glob('*.py')}
     config['weights_and_third_party_sources']={}
     for root in Path('executor').glob('*/tools'):
@@ -78,7 +78,7 @@ def main():
     # Copy common policies once. Never read or update production runtime memory.
     for name in ['schedule_rules.json','tool_profiles.json']:
         dest=out/name
-        if not dest.exists(): shutil.copy2(Path('memory')/name,dest)
+        if not dest.exists(): shutil.copy2(Path(a.tool_profile) if name=='tool_profiles.json' and a.tool_profile else Path('memory')/name,dest)
     snapshot=out/'statistics_snapshot.sqlite3'
     if a.memory_snapshot and not snapshot.exists():
         with sqlite3.connect('file:'+str(Path(a.memory_snapshot).resolve())+'?mode=ro',uri=True) as src, sqlite3.connect(snapshot) as dst: src.backup(dst)
@@ -121,6 +121,9 @@ def main():
                     from .staged_service import StagedServices, attach_staging
                     controller=StagedServices(work/'local_services',a.staged_gpu)
                     attach_staging(agent,controller,json.loads(Path(a.catalog).read_text()) if a.catalog else None)
+                elif a.catalog:
+                    from .staged_service import attach_catalog
+                    attach_catalog(agent,json.loads(Path(a.catalog).read_text()))
                 agent.run(plan=a.plan.split(',') if a.mode=='manual' else None)
                 output=agent.work_dir/'result.png'
             if pixels(output).shape!=pixels(r['input_path']).shape: raise ValueError('output size differs; no scoring resize permitted')

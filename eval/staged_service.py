@@ -73,3 +73,18 @@ def attach_staging(agent, controller, catalog=None):
         router[task]=[StagedTool(t) for t in tools]
     agent.executor.toolbox_router=router
     agent._append_episode_event(event_type='deployment_configuration',state=agent._episode_state(),outcome={'mode':'single_gpu_live_staged','catalog':{k:[t.tool_name for t in v] for k,v in router.items()},'response_cache':False})
+
+
+def attach_catalog(agent, catalog):
+    """Select the same explicit available tools for persistent-service experiments."""
+    router={}
+    if set(catalog) != set(agent.executor.toolbox_router):
+        raise ValueError('catalog must explicitly cover every registered task')
+    for task, tools in agent.executor.toolbox_router.items():
+        wanted=catalog[task]; known={t.tool_name:t for t in tools}
+        if not wanted or len(wanted)!=len(set(wanted)) or not set(wanted)<=set(known):
+            raise ValueError('invalid catalog tool selection: '+task)
+        router[task]=[known[name] for name in wanted]
+    agent.executor.toolbox_router=router
+    agent._append_episode_event(event_type='deployment_configuration',state=agent._episode_state(),
+        outcome={'mode':'persistent_local_services','catalog':catalog,'response_cache':False})
