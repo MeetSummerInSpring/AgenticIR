@@ -40,6 +40,16 @@ def qa_rows(pair):
     return rows
 
 
+def noncorresponding_sources(a, b):
+    if a['group_id'] == b['group_id']:
+        return False
+    ca, cb = str(a.get('camera_id') or '').strip(), str(b.get('camera_id') or '').strip()
+    if ca and cb:
+        return ca != cb
+    sa, sb = str(a.get('scene_id') or '').strip(), str(b.get('scene_id') or '').strip()
+    return bool(sa and sb and sa != sb)
+
+
 def prepare(manifest, results, protocol, out, small_sources, weights):
     out=Path(out)
     if out.exists():
@@ -82,7 +92,7 @@ def prepare(manifest, results, protocol, out, small_sources, weights):
         for group in sorted({r['group_id'] for r in eligible}):
             r=next(x for x in eligible if x['group_id']==group)
             pairs.append(pair(r,r['reference_path'],r['reference_path'],'identity','Tie','exact_pixel_identity'))
-            others=[q for q in eligible if q['group_id']!=group and q['scene_id']!=r['scene_id']]
+            others=[q for q in eligible if noncorresponding_sources(r,q)]
             if others:
                 other=others[0]
                 pairs.append(pair(r,r['reference_path'],other['reference_path'],'noncorrespondence',
