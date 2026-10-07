@@ -16,7 +16,14 @@ class RegistrySelector:
 
 class ExperimentAgent(IRAgent):
     def __init__(self, *args, selector_policy='current', memory_read='frozen',
-                 memory_snapshot=None, memory_update=False, log_events=True, max_tool_calls=8, max_llm_calls=20, **kwargs):
+                 memory_snapshot=None, memory_update=False, log_events=True, max_tool_calls=8, max_llm_calls=20,
+                 acceptance='original', weather_context=None, weather_role='real', weather_mode='realtime', **kwargs):
+        from .weather_context import prepare_context
+        if acceptance not in {'original', 'prefix_bidirectional'}:
+            raise ValueError('unknown acceptance policy')
+        self.acceptance_policy = acceptance
+        self.weather_raw = weather_context
+        self.weather_prepared = prepare_context(weather_context, weather_role, weather_mode)
         if kwargs.get('evaluate_degradation_by','depictqa') != 'depictqa' or kwargs.get('reflect_by','depictqa') != 'depictqa':
             raise ValueError('experiment vision must use local DepictQA; external transport is text-only')
         self.log_events = log_events; self.llm_calls=0; self.tool_calls=0; self.local_evaluation_calls=0
@@ -58,3 +65,28 @@ class ExperimentAgent(IRAgent):
     def _append_episode_event(self, **kwargs):
         if self.log_events: return super()._append_episode_event(**kwargs)
         return ''
+
+    def schedule(self, agenda, ps=''):
+        from .weather_context import local_schedule_advice
+        context = self.weather_prepared
+        # Weather observations, even anonymous summaries, remain local under the
+        # data-transfer authorization. External prompts are identical to M0.
+        visual_plan = super().schedule(agenda, ps)
+        plan, reason = local_schedule_advice(visual_plan, context)
+        record = dict(context, consumed_by_local_advisor=context['usable'],
+                      sent_to_external_model=False, agenda=list(agenda),
+                      visual_plan=visual_plan, plan=plan, advice_reason=reason)
+        self.work_mem.setdefault('weather_decisions', []).append(record)
+        self._append_episode_event(event_type='weather_context_decision',
+                                   action={'context': self.weather_raw}, outcome=record)
+        return plan
+
+    def _record_res(self):
+        if self.acceptance_policy == 'prefix_bidirectional':
+            from .candidate_acceptance import trajectory_prefix, accept_prefix
+            nodes = trajectory_prefix(self.work_mem['tree'], self.cur_node['img_path'])
+            selected, record = accept_prefix(nodes, self.compare_quality)
+            self.work_mem['acceptance'] = record
+            self._append_episode_event(event_type='terminal_acceptance', outcome=record)
+            self.cur_node = selected
+        return super()._record_res()

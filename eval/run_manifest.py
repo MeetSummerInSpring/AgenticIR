@@ -28,7 +28,12 @@ def main():
     p.add_argument('--staged-gpu', help='allocated GPU UUID for sequential live local services')
     p.add_argument('--catalog', help='JSON mapping every task to available tools')
     p.add_argument('--tool-profile', help='explicit frozen experimental selection profile')
+    p.add_argument('--acceptance', choices=['original', 'prefix_bidirectional'], default='original')
+    p.add_argument('--weather-contexts', help='JSON object keyed by manifest weather_context_id; raw local metadata')
+    p.add_argument('--weather-mode', choices=['realtime', 'offline_association'], default='realtime')
     a=p.parse_args()
+    if a.method=='restormer_smoke' and (a.acceptance!='original' or a.weather_contexts):
+        p.error('acceptance/weather options require an agent method')
     if a.staged_gpu and a.method=='restormer_smoke': p.error('staging requires an agent method')
     if a.mode=='manual' and not a.plan: p.error('manual mode requires --plan')
     if a.mode=='auto' and a.plan: p.error('auto mode cannot receive a plan')
@@ -53,6 +58,9 @@ def main():
     config['planner']={k:v for k,v in llm_cfg['GPT'].items() if 'KEY' not in k and 'SECRET' not in k}
     if config['planner']['MODEL'] != MODEL: raise ValueError('wrong text planner model')
     config['code']=code_hashes()
+    config['weather_contexts_sha256']=sha256(a.weather_contexts) if a.weather_contexts else None
+    weather_contexts=json.loads(Path(a.weather_contexts).read_text()) if a.weather_contexts else {}
+    if not isinstance(weather_contexts, dict): raise ValueError('weather contexts must be an object keyed by context ID')
     config['catalog_sha256']=sha256(a.catalog) if a.catalog else None
     config['memory_sha256']=sha256(a.memory_snapshot) if a.memory_snapshot else None
     config['input_hashes']={r['sample_id']:sha256(r['input_path']) for r in selected}
@@ -113,6 +121,8 @@ def main():
                 from .experiment_agent import ExperimentAgent
                 agent=ExperimentAgent(input_path=Path(r['input_path']),output_dir=work,llm_config_path=Path(a.llm_config),
                     evaluate_degradation_by=a.evaluator,reflect_by=a.evaluator,
+                    acceptance=a.acceptance,weather_context=weather_contexts.get(r.get('weather_context_id','')),
+                    weather_role=r['role'],weather_mode=a.weather_mode,
                     with_retrieval=config['schedule']=='on',schedule_experience_path=out/'schedule_rules.json',
                     episode_store_path=out/'events.sqlite3',tool_profile_path=out/'tool_profiles.json',
                     selector_policy=config['selector'],memory_read=a.memory_read,memory_snapshot=snapshot if snapshot.exists() else None,
