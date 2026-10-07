@@ -73,9 +73,10 @@ class ExperimentAgent(IRAgent):
         # data-transfer authorization. External prompts are identical to M0.
         visual_plan = super().schedule(agenda, ps)
         plan, reason = local_schedule_advice(visual_plan, context)
+        # Execution consumes the returned plan; audit records need independent snapshots.
         record = dict(context, consumed_by_local_advisor=context['usable'],
                       sent_to_external_model=False, agenda=list(agenda),
-                      visual_plan=visual_plan, plan=plan, advice_reason=reason)
+                      visual_plan=list(visual_plan), plan=list(plan), advice_reason=reason)
         self.work_mem.setdefault('weather_decisions', []).append(record)
         self._append_episode_event(event_type='weather_context_decision',
                                    action={'context': self.weather_raw}, outcome=record)

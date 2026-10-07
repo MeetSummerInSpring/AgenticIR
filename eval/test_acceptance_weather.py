@@ -124,6 +124,19 @@ class PlannerIntegrationTests(unittest.TestCase):
         agent.gpt4.assert_not_called()
         self.assertEqual(agent.work_mem['weather_decisions'][0]['advice_reason'],'no_supported_ordering_change')
 
+    def test_plan_audit_survives_execution_and_agenda_mutation(self):
+        agent=self.agent()
+        agenda=['brightening']
+        plan=agent.schedule(agenda)
+        plan.pop(0)
+        agenda.clear()
+        record=agent.work_mem['weather_decisions'][0]
+        for field in ['agenda','visual_plan','plan']:
+            self.assertEqual(record[field],['brightening'])
+        event=agent._append_episode_event.call_args.kwargs['outcome']
+        self.assertEqual(event['plan'],['brightening'])
+        self.assertEqual(plan,[])
+
     def test_local_prior_never_adds_a_task(self):
         from .weather_context import local_schedule_advice
         context=prepare_context(WeatherTests().fixture())
