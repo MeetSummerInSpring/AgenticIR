@@ -100,13 +100,21 @@ class ScopeTests(unittest.TestCase):
         from .frozen_statistics import FrozenStatistics
         class Store:
             def iter_events(self,**kwargs):
-                yield {'action':{'subtask':'deraining'},'state':{'scale_long_edge':1024,'observed_rain_severity':'medium'}}
+                yield {'action':{'subtask':'deraining','tool':'one'},'state':{'scale_long_edge':1024,'observed_rain_severity':'medium'},'outcome':{'status':'ok','quality_success':True},'transition':{'duration_seconds':2}}
             def get_tool_statistics(self,subtask):return {'one':'evidence'}
         state={'scale_long_edge':512,'observed_rain_severity':'medium'}
         frozen=FrozenStatistics(Store(),context=lambda:state)
         self.assertEqual(frozen.get_tool_statistics('deraining'),{})
         state['scale_long_edge']=1024
-        self.assertEqual(frozen.get_tool_statistics('deraining'),{'one':'evidence'})
+        self.assertEqual(frozen.get_tool_statistics('deraining')['one'].quality_successes,1)
+        # An additional scope must not contaminate the matching scope's estimates.
+        class Mixed(Store):
+            def iter_events(self,**kwargs):
+                yield from super().iter_events(**kwargs)
+                yield {'action':{'subtask':'deraining','tool':'one'},'state':{'scale_long_edge':512,'observed_rain_severity':'high'},'outcome':{'status':'ok','quality_success':False},'transition':{'duration_seconds':20}}
+        mixed=FrozenStatistics(Mixed(),context=lambda:state)
+        matched=mixed.get_tool_statistics('deraining')['one']
+        self.assertEqual((matched.attempts,matched.quality_successes,matched.mean_duration_seconds),(1,1,2))
         state['observed_rain_severity']='high'
         self.assertEqual(frozen.get_tool_statistics('deraining'),{})
 

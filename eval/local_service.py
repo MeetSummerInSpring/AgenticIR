@@ -12,12 +12,18 @@ from .experiment_support import atomic_json,resources
 from .manifest_io import sha256
 
 
+def _port_open(port):
+    with socket.socket() as probe:
+        probe.settimeout(1)
+        return probe.connect_ex(('127.0.0.1',port))==0
+
+
 def start_time(pid):
     return Path('/proc/'+str(pid)+'/stat').read_text().split()[21]
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['start','stop']);p.add_argument('--mode',choices=['severity','compare'],required=True);p.add_argument('--out',required=True);p.add_argument('--gpu',required=True);p.add_argument('--adapter',help='isolated comparison-only frozen adapter experiment');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['start','stop']);p.add_argument('--mode',choices=['severity','compare','dual'],required=True);p.add_argument('--out',required=True);p.add_argument('--gpu',required=True);p.add_argument('--adapter',help='isolated comparison-only frozen adapter experiment');a=p.parse_args()
     if a.adapter and a.mode!='compare':p.error('--adapter is comparison-only')
     out=Path(a.out).resolve();out.mkdir(parents=True,exist_ok=True);pidfile=out/(a.mode+'_owned_process.json')
     if a.action=='stop':
@@ -44,7 +50,8 @@ def main():
     if any(a.gpu in line for line in resource['processes']['stdout'].splitlines()):
         raise RuntimeError('selected GPU has existing processes; do not stop unknown processes')
     # Three-card deployments may keep the other route alive on a different UUID.
-    for port in [5001 if a.mode=='severity' else 5002]:
+    ports=[5001,5002] if a.mode=='dual' else [5001 if a.mode=='severity' else 5002]
+    for port in ports:
         with socket.socket() as s:
             s.settimeout(1)
             if s.connect_ex(('127.0.0.1',port))==0:raise RuntimeError('port already in use; do not manage unknown service')
@@ -59,15 +66,18 @@ def main():
     if a.adapter:
         script='eval.comparison_service';cwd=root.parent
         command=['/root/autodl-tmp/conda/envs/depictqa/bin/python','-u','-m',script,'--adapter',str(Path(a.adapter).resolve()),'--identity',str(out/'adapter_identity.json')]
-    proc=subprocess.Popen(command,cwd=cwd,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+    if a.mode=='dual':
+        script='eval.dual_vision_service';cwd=root.parent
+        command=['/root/autodl-tmp/conda/envs/depictqa/bin/python','-u','-m',script,'--out',str(out)]
     cfg=root/'experiments/agenticir'/('config_eval.yaml' if a.mode=='severity' else 'config_comp.yaml')
-    record={'pid':proc.pid,'start_time':start_time(proc.pid),'script':script,'gpu_uuid':a.gpu,'logical_cuda_device':0,'config_sha256':sha256(cfg),'host':'127.0.0.1','port':5001 if a.mode=='severity' else 5002,'adapter_sha256':adapter_sha256}
+    proc=subprocess.Popen(command,cwd=cwd,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+    record={'pid':proc.pid,'start_time':start_time(proc.pid),'script':script,'gpu_uuid':a.gpu,'logical_cuda_device':0,'config_sha256':sha256(cfg),'host':'127.0.0.1','port':5001 if a.mode=='severity' else 5002,'ports':ports,'adapter_sha256':adapter_sha256}
     atomic_json(pidfile,record)
     for _ in range(180):
         if proc.poll() is not None:raise RuntimeError('service startup exited '+str(proc.returncode))
         with socket.socket() as s:
             s.settimeout(1)
-            if s.connect_ex(('127.0.0.1',record['port']))==0:
+            if all(_port_open(port) for port in ports):
                 atomic_json(out/(a.mode+'_listening.json'),record);print('service ready for route validation',record['port'],proc.pid,flush=True);return
         time.sleep(1)
     os.killpg(proc.pid,signal.SIGTERM);raise TimeoutError('local service readiness budget exceeded')
